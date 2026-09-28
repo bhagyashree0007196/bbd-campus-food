@@ -2059,95 +2059,46 @@ function placeOrder() {
 /* -------------------- CONFIRM ORDER -------------------- */
 
 async function confirmOrder() {
-
     const checkbox = document.getElementById("policyAgreement");
 
+    // Policy check
     if (!checkbox || !checkbox.checked) {
         alert("Please read and accept the Order Policy before placing your order. 😊");
         return;
     }
 
+    // Empty cart check
     if (cart.length === 0) {
         closeOrderPolicy();
-
         alert("Your cart is empty! 🛒");
         return;
     }
 
+    // Calculate total
     const total = cart.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
     );
 
-    const itemCount = cart.reduce(
-        (sum, item) => sum + item.quantity,
-        0
+    // Generate demo order ID
+    const orderId =
+        "BBD" +
+        Date.now().toString().slice(-6);
+
+    // Close policy popup
+    closeOrderPolicy();
+
+    // Clear cart
+    cart = [];
+    updateCart();
+
+    // Show successful order message
+    alert(
+        "🎉 ORDER PLACED SUCCESSFULLY!\n\n" +
+        "Order ID: " + orderId + "\n\n" +
+        "Estimated Time: 15–20 minutes\n\n" +
+        "Thank you for ordering from BBD Campus Food! 🍔"
     );
-
-    const customer = window.orderCustomer;
-
-    try {
-
-        const response = await fetch(
-            "http://localhost:5000/api/orders",
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-
-                    customer: customer,
-
-                    outlet: outlet.name,
-
-                    outletKey: selectedOutlet,
-
-                    items: cart,
-
-                    total: total,
-
-                    estimatedTime: "15–20 minutes"
-
-                })
-            }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                data.message || "Failed to place order."
-            );
-        }
-
-        closeOrderPolicy();
-
-        const orderId = data.order.orderId;
-
-        cart = [];
-
-        updateCart();
-
-        // Automatically open Track Order page
-        window.location.href =
-            `track-order.html?orderId=${encodeURIComponent(orderId)}`;
-
-    }
-
-    catch (error) {
-
-        console.error("Order error:", error);
-
-        alert(
-            "❌ Order could not be placed.\n\n" +
-            "Please make sure the backend server is running."
-        );
-
-    }
-
 }
 /* -------------------- CUSTOMER DETAILS STYLES -------------------- */
 
