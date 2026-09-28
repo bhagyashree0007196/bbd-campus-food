@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BBD Campus Food | Track Order</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff8ef;
+            color: #2b1b17;
+            min-height: 100vh;
+        }
+
+        /* TOP BAR */
+        .topbar {
+            background: #8b1e2d;
+            color: white;
+            padding: 18px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-family: Georgia, serif;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .back {
+            background: #ffd166;
+            color: #2b1b17;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        /* HERO */
+        .hero {
+            text-align: center;
+            padding: 65px 20px 45px;
+            background: #fff1dc;
+        }
+
+        .label {
+            color: #e4572e;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 4px;
+        }
+
+        .hero h1 {
+            font-family: Georgia, serif;
+            font-size: clamp(42px, 7vw, 70px);
+            margin-top: 12px;
+        }
+
+        .hero h1 span {
+            color: #e4572e;
+        }
+
+        .hero p {
+            margin-top: 15px;
+            color: #76645b;
+        }
+
+        /* MAIN */
+        .tracker-box {
+            max-width: 760px;
+            margin: 35px auto 70px;
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 45px rgba(70, 40, 20, 0.12);
+        }
+
+        .tracker-box h2 {
+            font-family: Georgia, serif;
+            margin-bottom: 20px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        #orderId {
+            flex: 1;
+            padding: 14px 17px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        #orderId:focus {
+            border-color: #e4572e;
+            box-shadow: 0 0 0 3px rgba(228, 87, 46, 0.12);
+        }
+
+        .track-btn {
+            border: none;
+            background: #e4572e;
+            color: white;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .track-btn:hover {
+            background: #c94722;
+        }
+
+        /* MESSAGE */
+        #message {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .error {
+            background: #ffe5e5;
+            color: #a40000;
+        }
+
+        .loading {
+            background: #fff4d6;
+            color: #7a5700;
+        }
+
+        .success {
+            background: #e7f8ea;
+            color: #23752d;
+        }
+
+        /* ORDER CARD */
+        #orderResult {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .order-card {
+            border: 1px solid #eee;
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .order-header h3 {
+            font-family: Georgia, serif;
+            font-size: 25px;
+        }
+
+        .status-badge {
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: #fff0d1;
+            color: #8b4f00;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        /* STATUS TRACKER */
+        .status-track {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 40px 5px;
+        }
+
+        .status-track::before {
+            content: "";
+            position: absolute;
+            top: 18px;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background: #ddd;
+            z-index: 0;
+        }
+
+        .status-step {
+            width: 25%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .status-circle {
+            width: 38px;
+            height: 38px;
+            margin: auto;
+            border-radius: 50%;
+            background: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .status-step.active .status-circle {
+            background: #e4572e;
+            color: white;
+        }
+
+        .status-step.completed .status-circle {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-step p {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #76645b;
+        }
+
+        /* DETAILS */
+        .details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .detail-box {
+            background: #fff8ef;
+            padding: 16px;
+            border-radius: 14px;
+        }
+
+        .detail-box strong {
+            display: block;
+            color: #8b1e2d;
+            margin-bottom: 6px;
+        }
+
+        /* ITEMS */
+        .items {
+            margin-top: 28px;
+        }
+
+        .items h3 {
+            font-family: Georgia, serif;
+            margin-bottom: 12px;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 13px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+            font-size: 19px;
+            font-weight: bold;
+        }
+
+        /* CANCELLED */
+        .cancelled-box {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 14px;
+            background: #ffe5e5;
+            color: #a40000;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* MOBILE */
+        @media (max-width: 600px) {
+
+            .topbar {
+                padding: 15px 20px;
+            }
+
+            .brand {
+                font-size: 20px;
+            }
+
+            .input-row {
+                flex-direction: column;
+            }
+
+            .track-btn {
+                width: 100%;
+            }
+
+            .tracker-box {
+                margin: 25px 15px 50px;
+                padding: 22px;
+            }
+
+            .details {
+                grid-template-columns: 1fr;
+            }
+
+            .status-step p {
+                font-size: 10px;
+            }
+
+            .status-track::before {
+                left: 8%;
+                right: 8%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+
+        <div class="brand">
+            🍔 BBD Campus Food
+        </div>
+
+        <a href="index.html" class="back">
+            ← Back Home
+        </a>
+
+    </header>
+
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <div class="label">
+            ORDER TRACKING
+        </div>
+
+        <h1>
+            Track Your <span>Order</span>
+        </h1>
+
+        <p>
+            Enter your Order ID and check the current status of your order.
+        </p>
+
+    </section>
+
+
+    <!-- TRACKER -->
+    <main class="tracker-box">
+
+        <h2>
+            🔎 Enter Order ID
+        </h2>
+
+        <div class="input-row">
+
+            <input
+                type="text"
+                id="orderId"
+                placeholder="Example: ORD-123456"
+                autocomplete="off"
+            >
+
+            <button
+                class="track-btn"
+                onclick="trackOrder()"
+            >
+                Track Order
+            </button>
+
+        </div>
+
+        <div id="message"></div>
+
+
+        <!-- ORDER RESULT -->
+        <div id="orderResult">
+
+            <div class="order-card">
+
+                <div class="order-header">
+
+                    <h3 id="displayOrderId">
+                        Order
+                    </h3>
+
+                    <div
+                        id="statusBadge"
+                        class="status-badge"
+                    >
+                        Received
+                    </div>
+
+                </div>
+
+
+                <!-- STATUS -->
+                <div class="status-track">
+
+                    <div
+                        class="status-step"
+                        data-status="received"
+                    >
+
+                        <div class="status-circle">
+                            ✓
+                        </div>
+
+                        <p>
+                            Received
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        class="status-step"
+                        data-status="preparing"
+                    >
+
+                        <div class="status-circle">
+                            2
+                        </div>
+
+                        <p>
+                            Preparing
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        class="status-step"
+                        data-status="ready"
+                    >
+
+                        <div class="status-circle">
+                            3
+                        </div>
+
+                        <p>
+                            Ready
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        class="status-step"
+                        data-status="completed"
+                    >
+
+                        <div class="status-circle">
+                            4
+                        </div>
+
+                        <p>
+                            Completed
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DETAILS -->
+                <div class="details">
+
+                    <div class="detail-box">
+
+                        <strong>
+                            🏪 Outlet
+                        </strong>
+
+                        <span id="outletName">
+                            —
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-box">
+
+                        <strong>
+                            ⏱️ Estimated Time
+                        </strong>
+
+                        <span id="estimatedTime">
+                            —
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-box">
+
+                        <strong>
+                            👤 Customer
+                        </strong>
+
+                        <span id="customerName">
+                            —
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-box">
+
+                        <strong>
+                            📱 Phone
+                        </strong>
+
+                        <span id="customerPhone">
+                            —
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ITEMS -->
+                <div class="items">
+
+                    <h3>
+                        🛒 Your Items
+                    </h3>
+
+                    <div id="itemsList"></div>
+
+                    <div class="total">
+
+                        <span>
+                            Total
+                        </span>
+
+                        <span>
+                            ₹<span id="orderTotal">0</span>
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="cancelledBox"
+                    class="cancelled-box"
+                    style="display:none;"
+                >
+                    ❌ This order has been cancelled.
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <script>
+
+        const API = "http://localhost:5000";
+
+
+        /* ESCAPE HTML */
+
+        function escapeHTML(value) {
+
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+        }
+
+
+        /* TRACK ORDER */
+
+        async function trackOrder() {
+
+            const input =
+                document.getElementById("orderId");
+
+            const orderId =
+                input.value.trim();
+
+            const message =
+                document.getElementById("message");
+
+            const result =
+                document.getElementById("orderResult");
+
+
+            if (!orderId) {
+
+                message.textContent =
+                    "Please enter your Order ID.";
+
+                message.className = "error";
+
+                message.style.display = "block";
+
+                result.style.display = "none";
+
+                return;
+            }
+
+
+            message.textContent =
+                "🔄 Checking your order...";
+
+            message.className = "loading";
+
+            message.style.display = "block";
+
+
+            try {
+
+                const response = await fetch(
+                    `${API}/api/orders/${encodeURIComponent(orderId)}`
+                );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        "Order not found."
+                    );
+
+                }
+
+
+                displayOrder(data.order);
+
+
+                message.textContent =
+                    "✅ Order found successfully!";
+
+                message.className = "success";
+
+                message.style.display = "block";
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Tracking error:",
+                    error
+                );
+
+                result.style.display = "none";
+
+                message.textContent =
+                    "❌ " + error.message;
+
+                message.className = "error";
+
+                message.style.display = "block";
+
+            }
+
+        }
+
+
+        /* DISPLAY ORDER */
+
+        function displayOrder(order) {
+
+            const result =
+                document.getElementById("orderResult");
+
+            result.style.display = "block";
+
+
+            document.getElementById(
+                "displayOrderId"
+            ).textContent =
+                order.orderId || "Order";
+
+
+            document.getElementById(
+                "statusBadge"
+            ).textContent =
+                formatStatus(order.status);
+
+
+            document.getElementById(
+                "outletName"
+            ).textContent =
+                order.outlet || "—";
+
+
+            document.getElementById(
+                "estimatedTime"
+            ).textContent =
+                order.estimatedTime || "—";
+
+
+            document.getElementById(
+                "customerName"
+            ).textContent =
+                order.customer?.name || "—";
+
+
+            document.getElementById(
+                "customerPhone"
+            ).textContent =
+                order.customer?.phone || "—";
+
+
+            document.getElementById(
+                "orderTotal"
+            ).textContent =
+                Number(order.total || 0).toFixed(0);
+
+
+            /* ITEMS */
+
+            const itemsList =
+                document.getElementById("itemsList");
+
+            itemsList.innerHTML = "";
+
+
+            if (
+                Array.isArray(order.items) &&
+                order.items.length > 0
+            ) {
+
+                order.items.forEach(item => {
+
+                    const row =
+                        document.createElement("div");
+
+                    row.className = "item";
+
+                    row.innerHTML = `
+                        <span>
+                            ${escapeHTML(item.name)}
+                            × ${Number(item.quantity || 1)}
+                        </span>
+
+                        <strong>
+                            ₹${(
+                                Number(item.price || 0) *
+                                Number(item.quantity || 1)
+                            ).toFixed(0)}
+                        </strong>
+                    `;
+
+                    itemsList.appendChild(row);
+
+                });
+
+            }
+            else {
+
+                itemsList.innerHTML =
+                    "<p>No items found.</p>";
+
+            }
+
+
+            /* STATUS */
+
+            updateStatus(order.status);
+
+
+            /* CANCELLED */
+
+            const cancelledBox =
+                document.getElementById("cancelledBox");
+
+            if (order.status === "cancelled") {
+
+                cancelledBox.style.display = "block";
+
+            }
+            else {
+
+                cancelledBox.style.display = "none";
+
+            }
+
+        }
+
+
+        /* FORMAT STATUS */
+
+        function formatStatus(status) {
+
+            if (!status) {
+                return "Unknown";
+            }
+
+            return status.charAt(0).toUpperCase()
+                + status.slice(1);
+
+        }
+
+
+        /* UPDATE STATUS */
+
+        function updateStatus(status) {
+
+            const steps =
+                document.querySelectorAll(
+                    ".status-step"
+                );
+
+
+            const statuses = [
+                "received",
+                "preparing",
+                "ready",
+                "completed"
+            ];
+
+
+            const currentIndex =
+                statuses.indexOf(status);
+
+
+            steps.forEach((step, index) => {
+
+                step.classList.remove(
+                    "active",
+                    "completed"
+                );
+
+
+                if (
+                    currentIndex >= 0 &&
+                    index < currentIndex
+                ) {
+
+                    step.classList.add(
+                        "completed"
+                    );
+
+                }
+
+
+                if (
+                    currentIndex >= 0 &&
+                    index === currentIndex
+                ) {
+
+                    step.classList.add(
+                        "active"
+                    );
+
+                }
+
+            });
+
+        }
+
+
+        /* ENTER KEY */
+
+        document
+            .getElementById("orderId")
+            .addEventListener(
+                "keydown",
+                function(event) {
+
+                    if (event.key === "Enter") {
+
+                        trackOrder();
+
+                    }
+
+                }
+            );
+            const params = new URLSearchParams(window.location.search);
+const autoOrderId = params.get("orderId");
+
+if (autoOrderId) {
+    document.getElementById("orderId").value = autoOrderId;
+    trackOrder();
+}
+
+    </script>
+
+</body>
+
+</html>
